@@ -1,0 +1,10 @@
+# Core dependencies for U-Net Transformer Segmentation
+torch>=2.0.0
+numpy>=1.21.0
+pyyaml>=6.0
+tqdm>=4.64.0
+matplotlib>=3.5.0
+
+# Optional dependencies for enhanced functionality
+torchvision>=0.15.0  # For image I/O utilities only
+pillow>=9.0.0        # Image processing support

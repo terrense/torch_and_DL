@@ -1,0 +1,43 @@
+model:
+  name: "unet_baseline"
+  hidden_dim: 64
+  num_layers: 4
+  num_classes: 3
+  input_channels: 3
+  encoder_channels: [64, 128, 256, 512]
+  decoder_channels: [256, 128, 64, 32]
+  use_transformer: false
+
+data:
+  batch_size: 8
+  image_size: [256, 256]
+  num_workers: 4
+  num_shapes: 3
+  noise_level: 0.1
+  blur_sigma: 1.0
+  occlusion_prob: 0.2
+  class_imbalance: false
+
+training:
+  num_epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  loss_type: "dice_bce"
+  dice_weight: 0.5
+  bce_weight: 0.5
+  gradient_clip: 1.0
+  mixed_precision: false
+  accumulate_grad_batches: 1
+
+experiment:
+  name: "unet_baseline_experiment"
+  seed: 42
+  deterministic: true
+  log_every: 10
+  save_every: 20
+  eval_every: 10
+  output_dir: "runs"
+  checkpoint_dir: "checkpoints"
+  log_dir: "logs"
