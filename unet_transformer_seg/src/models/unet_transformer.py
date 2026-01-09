@@ -724,3 +724,101 @@ def create_unet_transformer(config: ModelConfig) -> UNetTransformer:
         U-Net + Transformer hybrid model instance
     """
     return UNetTransformer(config)
+
+# It centralizes creation decisions and hides construction details from the caller. ———————— factory function 
+
+"""
+Why not just call the constructor directly?
+
+If your project is tiny and you will never change the creation logic, calling User() directly is fine.
+
+A factory becomes valuable when at least one of these is true:
+
+1) You may choose between multiple implementations
+
+Analogy: You ask for “a car,” not “a 2022 Toyota Corolla with these exact options.”
+
+                def make_cache(env: str):
+                    if env == "prod":
+                        return RedisCache()
+                    return InMemoryCache()
+
+
+Caller code stays stable even if you later switch Redis → Memcached.
+
+2) Construction is non-trivial (more than “new + defaults”)
+
+Maybe you must pass config, inject dependencies, set up internal state, validate arguments, etc.
+
+            def make_http_client(config):
+                return HttpClient(
+                    base_url=config.base_url,
+                    timeout=config.timeout,
+                    retries=3,
+                )
+
+
+The caller no longer repeats these knobs everywhere.
+
+3) You want one place to enforce rules/invariants
+
+Example rules:
+
+        “Timeout must be within [1, 30] seconds.”
+
+        “In production, TLS must be enabled.”
+
+        “This object must be created with these dependencies.”
+
+        Factories are a good place to enforce policy.
+
+4) You want easier testing / swapping (without rewriting caller code)
+
+In tests, you can replace the factory result:
+
+                def make_repo():
+                    return RealRepo()
+
+# in tests, patch make_repo() to return FakeRepo()
+
+
+This is often simpler than hunting down 30 places that do RealRepo().
+
+5) You want lazy creation (create only when needed)
+            _repo = None
+            def get_repo():
+                global _repo
+                if _repo is None:
+                    _repo = RealRepo()
+                return _repo
+
+
+This “factory + cache” is a common Singleton alternative.
+
+So when is it “just a wrapper”?
+
+If your factory is always:
+
+        return SomeClass()
+
+        no branching
+
+        no extra parameters or validation
+
+        no policy
+
+        no dependency wiring
+
+        no future flexibility needed
+
+…then yes, it’s mostly a wrapper, and it may be unnecessary.
+
+But many teams still keep such wrappers deliberately because they expect growth:
+
+Today: return Model()
+
+Tomorrow: load weights, set device, configure batching, attach metrics, etc.
+
+That wrapper becomes the single edit point later.
+
+"""
