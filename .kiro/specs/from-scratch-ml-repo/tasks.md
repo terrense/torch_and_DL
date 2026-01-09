@@ -131,13 +131,17 @@
 
 
 
+
   - [ ] 5.2 Implement segmentation metrics
     - Create IoU calculation from scratch with per-class support
     - Implement pixel accuracy and per-class dice score metrics
+
+
     - Add metric aggregation and reporting utilities
     - _Requirements: 3.5, 9.2_
 
-  - [ ] 5.3 Build training loop with comprehensive features
+  - [-] 5.3 Build training loop with comprehensive features
+
     - Implement training loop with AdamW optimizer and optional scheduler
     - Add gradient clipping, mixed precision, and checkpoint management
     - Include per-epoch metrics logging and results CSV generation
