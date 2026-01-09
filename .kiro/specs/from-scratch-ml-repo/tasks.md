@@ -116,7 +116,9 @@
     - Add configuration switches between baseline and hybrid variants
     - _Requirements: 3.2, 3.3, 9.2_
 
-- [-] 5. Implement segmentation training and evaluation systems
+- [x] 5. Implement segmentation training and evaluation systems
+
+
 
 
 
@@ -132,13 +134,15 @@
 
 
 
-  - [ ] 5.2 Implement segmentation metrics
+  - [x] 5.2 Implement segmentation metrics
+
     - Create IoU calculation from scratch with per-class support
     - Implement pixel accuracy and per-class dice score metrics
 
 
     - Add metric aggregation and reporting utilities
     - _Requirements: 3.5, 9.2_
+
 
   - [-] 5.3 Build training loop with comprehensive features
 
@@ -147,7 +151,8 @@
     - Include per-epoch metrics logging and results CSV generation
     - _Requirements: 5.3, 5.4, 9.2, 9.5_
 
-  - [ ] 5.4 Create evaluation and inference scripts
+  - [x] 5.4 Create evaluation and inference scripts
+
     - Implement evaluation pipeline with metric calculation and logging
     - Create inference script for single images with visualization
     - Add prediction overlay generation and result saving
