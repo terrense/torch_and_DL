@@ -136,6 +136,8 @@ This repository is designed for progressive learning. Here's the recommended exp
 
 ### Adding Real Datasets
 
+![Banner](images/unet.jpg)
+
 **For U-Net Transformer Segmentation:**
 Replace toy dataset in `src/data/toy_shapes.py` with real image/mask pairs:
 ```python
