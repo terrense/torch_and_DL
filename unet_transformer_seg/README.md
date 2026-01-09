@@ -8,17 +8,23 @@ This project implements a hybrid U-Net + Transformer architecture for image segm
 # Install dependencies
 pip install -r requirements.txt
 
-# Train baseline U-Net
-python scripts/train.py --config configs/unet_baseline.yaml
+# Train baseline U-Net on toy shapes dataset
+python scripts/train.py --config configs/unet_baseline.yaml --run-name unet_baseline_toy
 
 # Train U-Net + Transformer hybrid
-python scripts/train.py --config configs/unet_transformer.yaml
+python scripts/train.py --config configs/unet_transformer.yaml --run-name unet_transformer_toy
 
-# Evaluate model
-python scripts/eval.py --checkpoint runs/latest/checkpoints/best.pt
+# Evaluate trained model
+python scripts/eval.py --checkpoint runs/unet_baseline_toy/checkpoints/best.pt --output results/eval_baseline.json
 
-# Run inference
-python scripts/infer.py --checkpoint runs/latest/checkpoints/best.pt --image path/to/image.jpg
+# Run inference on single image
+python scripts/infer.py --checkpoint runs/unet_transformer_toy/checkpoints/best.pt --image data/test_image.jpg --output results/prediction.png
+
+# Generate toy dataset samples
+python scripts/generate_toy_data.py --output data/toy_samples/ --num-samples 100
+
+# Run smoke test (quick training verification)
+python scripts/smoke_test.py --config configs/unet_baseline.yaml --steps 50
 ```
 
 ## Project Structure

@@ -1,0 +1,56 @@
+model:
+  name: "paraformer_base"
+  input_dim: 80
+  hidden_dim: 256
+  vocab_size: 1000
+  encoder_layers: 6
+  encoder_heads: 8
+  encoder_dropout: 0.1
+  encoder_ff_dim: 1024
+  predictor_layers: 2
+  predictor_hidden_dim: 128
+  decoder_layers: 2
+  decoder_heads: 8
+  decoder_dropout: 0.1
+  decoder_ff_dim: 512
+  max_seq_len: 2048
+  pad_token_id: 0
+  sos_token_id: 1
+  eos_token_id: 2
+  unk_token_id: 3
+
+data:
+  batch_size: 16
+  max_feature_len: 1000
+  max_token_len: 200
+  num_workers: 4
+  vocab_size: 1000
+  min_seq_len: 10
+  max_seq_len: 100
+  feature_noise: 0.1
+  correlation_strength: 0.8
+  difficulty_level: 0.5
+
+training:
+  num_epochs: 100
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  optimizer: "adamw"
+  scheduler: "warmup_cosine"
+  warmup_steps: 1000
+  label_smoothing: 0.1
+  predictor_loss_weight: 0.1
+  gradient_clip: 1.0
+  mixed_precision: false
+  accumulate_grad_batches: 1
+
+experiment:
+  name: "paraformer_base_experiment"
+  seed: 42
+  deterministic: true
+  log_every: 10
+  save_every: 20
+  eval_every: 10
+  output_dir: "runs"
+  checkpoint_dir: "checkpoints"
+  log_dir: "logs"

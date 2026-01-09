@@ -11,7 +11,9 @@
   - Set up independent requirements.txt files for each subproject
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 9.1, 10.1, 10.2_
 
-- [-] 2. Implement core infrastructure utilities
+- [x] 2. Implement core infrastructure utilities
+
+
 
 
 
@@ -39,27 +41,38 @@
     - Create NaN/Inf detection and reporting functions
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [-] 2.4 Implement logging and checkpointing systems
+  - [x] 2.4 Implement logging and checkpointing systems
+
 
     - Create structured logging utilities for training progress
     - Implement checkpoint save/load functionality with metadata
     - Add experiment tracking with unique run IDs and timestamped directories
     - _Requirements: 5.3, 5.4, 5.5, 9.5_
 
-- [ ] 3. Build U-Net Transformer Segmentation project structure
-  - [ ] 3.1 Set up project directory structure and documentation
+- [x] 3. Build U-Net Transformer Segmentation project structure
+
+
+
+
+  - [x] 3.1 Set up project directory structure and documentation
+
+
     - Create configs/, src/, tests/, scripts/, docs/ directories
     - Write project-specific README.md with exact commands
     - Create SPEC.md, CONTRACTS.md, and ABLATIONS.md documentation files
     - _Requirements: 8.1, 8.3, 10.3, 10.4, 10.5_
 
-  - [ ] 3.2 Implement toy shapes dataset generator
+  - [x] 3.2 Implement toy shapes dataset generator
+
+
     - Create synthetic segmentation dataset with multiple shape types
     - Add configurable noise, blur, occlusion, and class imbalance options
     - Implement proper image and mask generation with alignment
     - _Requirements: 2.5, 3.4, 9.2_
 
-  - [ ] 3.3 Create data transforms and loading pipeline
+  - [x] 3.3 Create data transforms and loading pipeline
+
+
     - Implement from-scratch transforms (resize, normalize, flips) with mask alignment
     - Create folder dataset loader for real image/mask pairs
     - Add batching and collation functions for variable-sized inputs
