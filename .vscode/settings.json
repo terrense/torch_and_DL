@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "unet_transformer_seg"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

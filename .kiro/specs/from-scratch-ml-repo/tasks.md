@@ -173,7 +173,12 @@
 
 
 
-  - [ ] 6.2 Implement toy sequence-to-sequence dataset
+  - [x] 6.2 Implement toy sequence-to-sequence dataset
+
+
+
+
+
     - Generate synthetic speech-like features correlated to token sequences
     - Create variable-length feature and token sequences with controllable difficulty
     - Add proper padding, masking, and attention mask generation
