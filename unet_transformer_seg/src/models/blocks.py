@@ -1,4 +1,35 @@
-"""Basic building blocks for U-Net architecture."""
+"""
+Fundamental Building Blocks for U-Net and Hybrid Architectures
+
+This module provides the essential convolutional building blocks that form the
+foundation of CNN-based segmentation models. These blocks implement proven
+architectural patterns optimized for computer vision tasks.
+
+Key Deep Learning Components:
+1. Convolutional Blocks: Basic Conv→Norm→Activation pattern
+2. Downsampling Blocks: Feature extraction with spatial compression
+3. Upsampling Blocks: Feature reconstruction with skip connection fusion
+4. Bottleneck Blocks: Deep feature processing at lowest resolution
+5. Residual Patterns: Gradient flow and feature preservation
+
+Architectural Design Principles:
+- Modular Design: Reusable components for flexible architecture construction
+- Normalization: Batch/Instance/Group normalization for training stability
+- Activation Functions: ReLU/GELU/LeakyReLU for non-linear transformations
+- Dropout Regularization: Prevent overfitting in deep networks
+- Skip Connections: Preserve spatial information across scales
+
+Mathematical Foundation:
+- Convolution: Local feature extraction with learnable filters
+- Normalization: Input standardization for stable gradient flow
+- Activation: Non-linear transformations enabling complex function approximation
+- Pooling/Upsampling: Spatial resolution manipulation for multi-scale processing
+
+References:
+- "Deep Residual Learning for Image Recognition" - He et al. (ResNet blocks)
+- "Batch Normalization: Accelerating Deep Network Training" - Ioffe & Szegedy
+- "U-Net: Convolutional Networks for Biomedical Image Segmentation" - Ronneberger et al.
+"""
 
 import torch
 import torch.nn as nn
@@ -10,11 +41,33 @@ from ..utils.tensor_utils import validate_tensor, assert_shape
 
 class ConvBlock(nn.Module):
     """
-    Convolutional block with Conv->Norm->Activation pattern.
+    Fundamental Convolutional Block for Deep Learning Architectures
+    
+    This block implements the standard Conv→Norm→Activation pattern that forms
+    the backbone of modern CNN architectures. It provides flexible configuration
+    for different normalization and activation strategies.
+    
+    Deep Learning Design Pattern:
+    1. Convolution: Spatial feature extraction with learnable filters
+    2. Normalization: Input standardization for stable training
+    3. Activation: Non-linear transformation enabling complex functions
+    4. Dropout: Regularization to prevent overfitting
+    
+    Key Benefits:
+    - Stable Training: Normalization prevents internal covariate shift
+    - Non-linearity: Activation functions enable complex pattern learning
+    - Regularization: Dropout prevents overfitting in deep networks
+    - Flexibility: Configurable components for different use cases
+    
+    Mathematical Operations:
+    - Conv2D: y = W * x + b (learnable spatial filters)
+    - BatchNorm: y = γ((x-μ)/σ) + β (normalize and scale)
+    - Activation: y = f(x) where f is non-linear function
+    - Dropout: y = x * mask (random feature masking)
     
     Tensor Contract:
-    - Input: [B, in_channels, H, W]
-    - Output: [B, out_channels, H, W] (same spatial dimensions)
+    - Input: [B, in_channels, H, W] - Batch, Input Channels, Height, Width
+    - Output: [B, out_channels, H, W] - Same spatial dimensions, different channels
     """
     
     def __init__(

@@ -1,8 +1,40 @@
 """
-From-scratch transforms for segmentation tasks.
+From-Scratch Data Transforms for Segmentation Tasks
 
-Implements resize, normalize, and augmentation transforms with proper mask alignment.
-All transforms are implemented using PyTorch operations without external libraries.
+This module implements essential data preprocessing and augmentation transforms
+specifically designed for semantic segmentation tasks. All transforms are
+implemented using pure PyTorch operations to ensure educational transparency
+and avoid external dependencies.
+
+Key Deep Learning Concepts:
+1. Data Augmentation: Increases dataset diversity and model generalization
+2. Geometric Transforms: Spatial transformations preserving semantic content
+3. Photometric Transforms: Color/intensity changes simulating real-world variations
+4. Mask Alignment: Ensures segmentation masks remain synchronized with images
+5. Interpolation Methods: Different strategies for images vs. discrete labels
+
+Data Augmentation Benefits:
+- Improved Generalization: Reduces overfitting by increasing effective dataset size
+- Robustness: Models become invariant to common transformations
+- Domain Adaptation: Simulates variations in real-world deployment scenarios
+- Class Balance: Can help address imbalanced datasets through selective augmentation
+
+Implementation Principles:
+- Mask Preservation: Segmentation masks must undergo identical spatial transforms
+- Label Integrity: Discrete class labels preserved through nearest-neighbor interpolation
+- Differentiability: All transforms maintain gradient flow for end-to-end training
+- Efficiency: GPU-accelerated tensor operations for fast preprocessing
+
+Mathematical Foundations:
+- Bilinear Interpolation: Smooth image resampling preserving visual quality
+- Nearest Neighbor: Discrete label preservation for segmentation masks
+- Affine Transformations: Linear transformations (rotation, scaling, translation)
+- Color Space Manipulations: HSV/RGB adjustments for photometric augmentation
+
+References:
+- "Data Augmentation for Deep Learning" - Shorten & Khoshgoftaar
+- "Albumentations: Fast and Flexible Image Augmentations" - Buslaev et al.
+- "AutoAugment: Learning Augmentation Strategies from Data" - Cubuk et al.
 """
 
 import torch
@@ -13,10 +45,27 @@ import math
 
 class Resize:
     """
-    Resize image and mask to target size with proper alignment.
+    Intelligent Resize Transform for Segmentation Tasks
     
-    Uses bilinear interpolation for images and nearest neighbor for masks
-    to preserve class labels.
+    This transform handles the critical challenge of resizing both images and
+    segmentation masks while preserving semantic information. Different interpolation
+    methods are used for continuous images vs. discrete label maps.
+    
+    Deep Learning Rationale:
+    - Spatial Consistency: Images and masks must maintain perfect alignment
+    - Label Preservation: Segmentation classes must remain discrete (no interpolation)
+    - Scale Invariance: Models should handle objects at different scales
+    - Memory Efficiency: Standardized sizes enable efficient batch processing
+    
+    Interpolation Strategy:
+    - Images: Bilinear interpolation for smooth visual quality
+    - Masks: Nearest neighbor to preserve discrete class labels
+    - Alignment: Both transformations use identical coordinate mappings
+    
+    Mathematical Implementation:
+    - Bilinear: I(x,y) = Σ w_ij * I(x_i, y_j) where w_ij are bilinear weights
+    - Nearest: M(x,y) = M(round(x), round(y)) preserving discrete labels
+    - Coordinate Mapping: (x',y') = (x*scale_x, y*scale_y) for uniform scaling
     """
     
     def __init__(self, size: Union[int, Tuple[int, int]]):
@@ -70,9 +119,28 @@ class Resize:
 
 class Normalize:
     """
-    Normalize image with given mean and standard deviation.
+    Statistical Normalization for Deep Learning Input Preprocessing
     
-    Applies per-channel normalization: (image - mean) / std
+    This transform applies channel-wise normalization to input images, converting
+    pixel values to standardized distributions that facilitate neural network training.
+    Normalization is crucial for stable gradient flow and convergence.
+    
+    Deep Learning Benefits:
+    - Gradient Stability: Prevents vanishing/exploding gradients in deep networks
+    - Convergence Speed: Accelerates training by centering data around zero
+    - Transfer Learning: ImageNet statistics enable pretrained model usage
+    - Numerical Stability: Prevents activation saturation in early layers
+    
+    Mathematical Formulation:
+    - Normalization: x_norm = (x - μ) / σ
+    - Per-channel: Applied independently to R, G, B channels
+    - Statistics: μ and σ computed from large datasets (e.g., ImageNet)
+    - Range: Typically transforms [0,1] to approximately [-2,2]
+    
+    ImageNet Statistics (Default):
+    - Mean: [0.485, 0.456, 0.406] for RGB channels
+    - Std: [0.229, 0.224, 0.225] for RGB channels
+    - Computed from millions of natural images for broad applicability
     """
     
     def __init__(self, 

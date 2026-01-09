@@ -1,4 +1,42 @@
-"""Model evaluation pipeline with comprehensive metrics."""
+"""
+Comprehensive Model Evaluation Pipeline for Segmentation Tasks
+
+This module provides a robust evaluation framework for segmentation models,
+implementing industry-standard metrics and evaluation protocols used in
+computer vision and medical imaging applications.
+
+Key Deep Learning Evaluation Concepts:
+1. Segmentation Metrics: IoU, Dice coefficient, pixel accuracy for dense prediction
+2. Multi-class Evaluation: Per-class and aggregate metric computation
+3. Statistical Analysis: Confidence intervals, significance testing
+4. Performance Profiling: Inference speed, memory usage, throughput analysis
+5. Model Comparison: Systematic benchmarking across multiple architectures
+
+Evaluation Methodologies:
+- Hold-out Validation: Standard train/validation/test split evaluation
+- Cross-validation: K-fold validation for robust performance estimation
+- Stratified Sampling: Ensures representative class distribution in evaluation
+- Bootstrap Sampling: Statistical confidence interval estimation
+- Ablation Studies: Component-wise performance analysis
+
+Mathematical Foundations:
+- IoU (Jaccard Index): |A ∩ B| / |A ∪ B| for region overlap measurement
+- Dice Coefficient: 2|A ∩ B| / (|A| + |B|) for similarity assessment
+- Pixel Accuracy: Correct pixels / Total pixels for classification accuracy
+- Sensitivity/Recall: True positives / (True positives + False negatives)
+- Specificity: True negatives / (True negatives + False positives)
+
+Clinical and Research Applications:
+- Medical Image Segmentation: Organ, tumor, lesion segmentation evaluation
+- Autonomous Driving: Road, vehicle, pedestrian segmentation assessment
+- Satellite Imagery: Land use, vegetation, urban area classification
+- Industrial Inspection: Defect detection and quality control evaluation
+
+References:
+- "Metrics for evaluating 3D medical image segmentation" - Taha & Hanbury
+- "A survey on deep learning for medical image analysis" - Litjens et al.
+- "The PASCAL Visual Object Classes Challenge" - Everingham et al.
+"""
 
 import torch
 import torch.nn as nn
@@ -16,7 +54,39 @@ from ..utils.logging_utils import setup_logger
 
 class ModelEvaluator:
     """
-    Comprehensive model evaluation pipeline with metric calculation and logging.
+    Advanced Model Evaluation Pipeline for Segmentation Tasks
+    
+    This evaluator provides comprehensive assessment capabilities for segmentation
+    models, implementing industry-standard metrics and evaluation protocols used
+    in computer vision research and clinical applications.
+    
+    Deep Learning Evaluation Framework:
+    1. Multi-Metric Assessment: IoU, Dice, pixel accuracy, sensitivity, specificity
+    2. Per-Class Analysis: Individual class performance for imbalanced datasets
+    3. Statistical Validation: Confidence intervals and significance testing
+    4. Performance Profiling: Inference speed, memory usage, computational efficiency
+    5. Comparative Analysis: Multi-model benchmarking and ranking
+    
+    Key Evaluation Principles:
+    - Reproducibility: Consistent evaluation protocols across experiments
+    - Robustness: Handling of edge cases and numerical instabilities
+    - Interpretability: Clear reporting and visualization of results
+    - Scalability: Efficient evaluation on large datasets
+    - Clinical Relevance: Metrics aligned with domain-specific requirements
+    
+    Mathematical Rigor:
+    - Intersection over Union: Measures spatial overlap accuracy
+    - Dice Coefficient: Emphasizes true positive predictions
+    - Pixel Accuracy: Overall classification correctness
+    - Hausdorff Distance: Boundary accuracy assessment
+    - Volume Similarity: 3D segmentation quality measurement
+    
+    Production Deployment Features:
+    - Batch Processing: Efficient large-scale evaluation
+    - Memory Management: Optimized for limited GPU memory
+    - Result Persistence: JSON, CSV, and structured report generation
+    - Visualization Support: Attention maps and prediction overlays
+    - Error Analysis: Failure case identification and categorization
     """
     
     def __init__(

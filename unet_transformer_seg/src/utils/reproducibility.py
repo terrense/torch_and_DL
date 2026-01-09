@@ -1,4 +1,49 @@
-"""Utilities for reproducible training and seed control."""
+"""
+Reproducibility Utilities for Deep Learning Research
+
+This module provides essential tools for ensuring reproducible deep learning
+experiments. Reproducibility is fundamental to scientific research and critical
+for debugging, comparing models, and validating results.
+
+Key Reproducibility Concepts:
+1. Seed Control: Deterministic random number generation across all libraries
+2. Environment Consistency: Standardized hardware and software configurations
+3. Deterministic Operations: Consistent behavior across different runs
+4. State Management: Proper handling of random states and model initialization
+5. Documentation: Comprehensive logging of experimental conditions
+
+Deep Learning Reproducibility Challenges:
+- Multiple Random Sources: Python, NumPy, PyTorch, CUDA all have separate RNGs
+- Hardware Variations: Different GPUs, drivers, and CUDA versions
+- Non-deterministic Operations: Some CUDA operations are inherently non-deterministic
+- Floating Point Precision: Minor differences can accumulate over training
+- Library Versions: Different versions may have different default behaviors
+
+Critical Components:
+- Random Seed Setting: Synchronizes all random number generators
+- Deterministic Algorithms: Forces deterministic behavior where possible
+- Environment Logging: Records all relevant system information
+- State Validation: Verifies that operations are actually reproducible
+- Context Management: Temporary reproducible environments for testing
+
+Mathematical Considerations:
+- Floating Point Arithmetic: IEEE 754 standard ensures some consistency
+- Accumulation Order: Different operation orders can yield different results
+- Parallel Reduction: Non-deterministic ordering in parallel operations
+- Gradient Computation: Backpropagation order affects numerical precision
+
+Production Implications:
+- Model Deployment: Ensures consistent inference results
+- A/B Testing: Enables fair comparison between model versions
+- Debugging: Reproducible failures enable systematic debugging
+- Compliance: Some domains require deterministic model behavior
+
+References:
+- "Reproducible Research in Computational Science" - Peng
+- "The Case for Reproducible Research" - Donoho et al.
+- "PyTorch Reproducibility Guide" - PyTorch Team
+- "Random Seeds in Machine Learning" - Bouthillier & Vincent
+"""
 
 import os
 import random
@@ -15,11 +60,34 @@ logger = logging.getLogger(__name__)
 
 def set_seed(seed: int, deterministic: bool = True) -> None:
     """
-    Set random seeds for reproducible training.
+    Set Random Seeds for Reproducible Deep Learning Training
+    
+    This function establishes deterministic behavior across all random number
+    generators used in deep learning pipelines. Proper seed setting is essential
+    for reproducible research and debugging.
+    
+    Deep Learning Random Sources:
+    1. Python Random: Built-in random module for general randomization
+    2. NumPy Random: Scientific computing randomization (data preprocessing)
+    3. PyTorch Random: Neural network initialization and operations
+    4. CUDA Random: GPU-based random operations and cuDNN algorithms
+    5. Environment Variables: System-level randomization control
+    
+    Deterministic vs Non-Deterministic Trade-offs:
+    - Deterministic: Reproducible results, slower training, debugging-friendly
+    - Non-Deterministic: Faster training, hardware optimization, production-ready
+    - cuDNN Benchmark: Optimizes convolution algorithms but breaks reproducibility
+    - Deterministic Algorithms: Forces consistent behavior at performance cost
     
     Args:
-        seed: Random seed value
-        deterministic: Whether to enable deterministic operations
+        seed: Random seed value (typically 42, 0, or experiment-specific)
+        deterministic: Enable deterministic operations (slower but reproducible)
+        
+    Implementation Details:
+    - torch.manual_seed: Sets CPU random number generator
+    - torch.cuda.manual_seed_all: Sets all GPU random number generators
+    - PYTHONHASHSEED: Controls Python hash randomization
+    - CUBLAS_WORKSPACE_CONFIG: Enables deterministic CUDA operations
     """
     # Python random
     random.seed(seed)

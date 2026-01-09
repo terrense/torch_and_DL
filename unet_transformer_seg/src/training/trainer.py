@@ -1,4 +1,38 @@
-"""Comprehensive segmentation trainer with full feature set."""
+"""
+Comprehensive Segmentation Trainer with Advanced Deep Learning Features
+
+This module implements a state-of-the-art training pipeline for segmentation models,
+incorporating modern deep learning techniques and best practices for stable and
+efficient training of neural networks.
+
+Key Deep Learning Components:
+1. AdamW Optimizer: Advanced adaptive learning rate with weight decay regularization
+2. Learning Rate Scheduling: Cosine annealing, step decay, and plateau-based scheduling
+3. Mixed Precision Training: FP16 computation for memory efficiency and speed
+4. Gradient Clipping: Prevents exploding gradients in deep networks
+5. Gradient Accumulation: Simulates larger batch sizes for memory-constrained training
+6. Checkpoint Management: Model state persistence and recovery
+7. Comprehensive Metrics: Multi-class segmentation evaluation
+
+Advanced Training Techniques:
+- Automatic Mixed Precision (AMP): Reduces memory usage and accelerates training
+- Gradient Scaling: Prevents underflow in FP16 computations
+- Learning Rate Warmup: Gradual learning rate increase for stable training start
+- Early Stopping: Prevents overfitting through validation monitoring
+- Model Ensembling: Multiple checkpoint averaging for improved performance
+
+Mathematical Foundations:
+- AdamW: Combines Adam's adaptive moments with L2 weight decay
+- Cosine Annealing: Smooth learning rate decay following cosine function
+- Gradient Clipping: Constrains gradient norm to prevent instability
+- Mixed Precision: Balances numerical precision with computational efficiency
+
+References:
+- "Decoupled Weight Decay Regularization" - Loshchilov & Hutter (AdamW)
+- "SGDR: Stochastic Gradient Descent with Warm Restarts" - Loshchilov & Hutter
+- "Mixed Precision Training" - Micikevicius et al. (NVIDIA)
+- "Accurate, Large Minibatch SGD" - Goyal et al. (Gradient accumulation)
+"""
 
 import os
 import csv
@@ -21,8 +55,39 @@ from ..utils.logging_utils import setup_logger, log_metrics
 
 class SegmentationTrainer:
     """
-    Comprehensive segmentation trainer with AdamW optimizer, schedulers,
-    gradient clipping, mixed precision, checkpoint management, and metrics logging.
+    Advanced Segmentation Training Pipeline with Modern Deep Learning Techniques
+    
+    This trainer implements state-of-the-art training methodologies for deep learning
+    segmentation models, incorporating advanced optimization strategies, regularization
+    techniques, and monitoring systems for robust model development.
+    
+    Key Deep Learning Features:
+    1. AdamW Optimization: Decoupled weight decay for better generalization
+    2. Advanced Scheduling: Cosine annealing, step decay, plateau-based adaptation
+    3. Mixed Precision Training: FP16 computation for memory and speed optimization
+    4. Gradient Management: Clipping and accumulation for stable training
+    5. Comprehensive Monitoring: Loss tracking, metric computation, and logging
+    6. Checkpoint Management: Model state persistence and recovery mechanisms
+    
+    Training Stability Features:
+    - Gradient Clipping: Prevents exploding gradients in deep networks
+    - Learning Rate Scheduling: Adaptive learning rate for optimal convergence
+    - Mixed Precision: Maintains numerical stability while reducing memory usage
+    - Gradient Accumulation: Simulates larger batch sizes for better gradients
+    - Early Stopping: Prevents overfitting through validation monitoring
+    
+    Mathematical Optimizations:
+    - AdamW: m_t = β₁m_{t-1} + (1-β₁)g_t, v_t = β₂v_{t-1} + (1-β₂)g_t²
+    - Weight Decay: θ_t = θ_{t-1} - η(∇L + λθ_{t-1})
+    - Cosine Annealing: η_t = η_min + (η_max - η_min)(1 + cos(πt/T))/2
+    - Gradient Scaling: Prevents FP16 underflow through dynamic scaling
+    
+    Production-Ready Features:
+    - Comprehensive logging and monitoring
+    - Automatic checkpoint saving and loading
+    - CSV and JSON result export
+    - Multi-GPU support preparation
+    - Memory-efficient training strategies
     """
     
     def __init__(

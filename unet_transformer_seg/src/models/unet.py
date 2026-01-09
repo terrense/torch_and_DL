@@ -1,4 +1,34 @@
-"""Pure U-Net baseline model implementation."""
+"""
+Pure U-Net Baseline Model Implementation for Image Segmentation
+
+This module implements the classic U-Net architecture, serving as a baseline for
+comparison with hybrid transformer models. U-Net revolutionized medical image
+segmentation and remains highly effective for dense prediction tasks.
+
+Key Deep Learning Concepts:
+1. Encoder-Decoder Architecture: Symmetric contracting and expanding paths
+2. Skip Connections: Preserve fine-grained spatial information across scales
+3. Hierarchical Feature Learning: Multi-scale feature extraction and fusion
+4. Dense Prediction: Pixel-wise classification for segmentation tasks
+5. Spatial Localization: Combines global context with precise localization
+
+Architectural Innovation:
+- Symmetric encoder-decoder design with skip connections
+- Progressive spatial downsampling with channel expansion
+- Feature concatenation for multi-scale information fusion
+- Proven effectiveness for biomedical and natural image segmentation
+
+Mathematical Foundation:
+- Contracting Path: Progressive feature extraction with spatial compression
+- Expanding Path: Progressive spatial reconstruction with feature refinement
+- Skip Connections: Direct information flow preserving spatial details
+- Final Classification: 1x1 convolution for pixel-wise class prediction
+
+References:
+- "U-Net: Convolutional Networks for Biomedical Image Segmentation" - Ronneberger et al.
+- Established the encoder-decoder paradigm for dense prediction tasks
+- Demonstrated effectiveness of skip connections for spatial detail preservation
+"""
 
 import torch
 import torch.nn as nn
@@ -13,17 +43,38 @@ from ..utils.tensor_utils import validate_tensor, assert_shape
 @register_model("unet_baseline")
 class UNet(nn.Module):
     """
-    Pure U-Net model for image segmentation.
+    Pure U-Net Architecture for Semantic Segmentation
     
-    Architecture:
-    - Encoder: Series of downsampling blocks with skip connections
-    - Bottleneck: Central processing block
-    - Decoder: Series of upsampling blocks with skip connection fusion
-    - Output: Final classification layer
+    This implementation provides the classic U-Net architecture that established
+    the encoder-decoder paradigm for dense prediction tasks. The model combines
+    hierarchical feature extraction with precise spatial localization through
+    skip connections.
     
-    Tensor Contract:
-    - Input: [B, input_channels, H, W]
-    - Output: [B, num_classes, H, W]
+    Deep Learning Architecture:
+    1. Contracting Path (Encoder): Progressive spatial downsampling with feature extraction
+    2. Bottleneck: Deepest feature processing at lowest spatial resolution
+    3. Expanding Path (Decoder): Progressive spatial upsampling with feature refinement
+    4. Skip Connections: Direct feature concatenation preserving spatial details
+    5. Final Classification: Pixel-wise class prediction via 1x1 convolution
+    
+    Key Advantages:
+    - Proven effectiveness for medical and natural image segmentation
+    - Efficient architecture with relatively few parameters
+    - Strong spatial localization through skip connections
+    - Handles multi-scale features effectively
+    - Fast inference suitable for real-time applications
+    
+    Limitations Addressed by Transformer Variants:
+    - Limited global receptive field (local CNN operations)
+    - Difficulty modeling long-range spatial dependencies
+    - Bottleneck processing relies only on local convolutions
+    
+    Tensor Flow Architecture:
+    Input [B, C_in, H, W] 
+    → Encoder [B, C_enc, H/2^n, W/2^n] 
+    → Bottleneck [B, C_bottleneck, H/2^n, W/2^n]
+    → Decoder [B, C_dec, H, W] 
+    → Output [B, num_classes, H, W]
     """
     
     def __init__(self, config: ModelConfig):

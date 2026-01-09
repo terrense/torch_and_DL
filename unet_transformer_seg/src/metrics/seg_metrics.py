@@ -1,4 +1,49 @@
-"""Segmentation metrics implementation from scratch."""
+"""
+Segmentation Metrics Implementation from Scratch
+
+This module provides comprehensive implementations of standard segmentation metrics
+used in computer vision and medical imaging. All metrics are implemented from
+first principles to ensure transparency and educational value.
+
+Key Deep Learning Metrics:
+1. Intersection over Union (IoU/Jaccard): Measures spatial overlap accuracy
+2. Dice Coefficient (F1-Score): Emphasizes true positive predictions
+3. Pixel Accuracy: Overall classification correctness
+4. Sensitivity (Recall): True positive rate for each class
+5. Specificity: True negative rate for each class
+
+Mathematical Foundations:
+- IoU = |Prediction ∩ Ground Truth| / |Prediction ∪ Ground Truth|
+- Dice = 2 × |Prediction ∩ Ground Truth| / (|Prediction| + |Ground Truth|)
+- Pixel Accuracy = Correct Pixels / Total Pixels
+- Sensitivity = True Positives / (True Positives + False Negatives)
+- Specificity = True Negatives / (True Negatives + False Positives)
+
+Implementation Features:
+- Multi-class Support: Handles binary and multi-class segmentation
+- Ignore Index: Excludes specific classes (background, padding) from evaluation
+- Numerical Stability: Smoothing factors prevent division by zero
+- Batch Processing: Efficient computation across mini-batches
+- Memory Efficiency: Optimized for large-scale evaluation
+
+Clinical and Research Applications:
+- Medical Imaging: Organ, tumor, lesion segmentation assessment
+- Autonomous Driving: Road scene understanding evaluation
+- Satellite Imagery: Land cover classification assessment
+- Industrial Inspection: Quality control and defect detection
+
+Advantages of From-Scratch Implementation:
+- Educational Transparency: Clear understanding of metric computation
+- Customization Flexibility: Easy modification for specific requirements
+- Numerical Control: Direct handling of edge cases and stability
+- Performance Optimization: Tailored for specific use cases
+- Debugging Capability: Full visibility into computation steps
+
+References:
+- "Metrics for evaluating 3D medical image segmentation" - Taha & Hanbury
+- "A survey on evaluation metrics for image segmentation" - Csurka et al.
+- "The PASCAL Visual Object Classes Challenge" - Everingham et al.
+"""
 
 import torch
 import torch.nn.functional as F
@@ -14,17 +59,42 @@ def calculate_iou(
     per_class: bool = True
 ) -> torch.Tensor:
     """
-    Calculate Intersection over Union (IoU) from scratch.
+    Calculate Intersection over Union (IoU) from Scratch
+    
+    IoU is a fundamental metric for evaluating segmentation quality, measuring
+    the overlap between predicted and ground truth regions. It provides a
+    normalized measure of spatial accuracy that is robust to class imbalance.
+    
+    Mathematical Definition:
+    IoU = |Prediction ∩ Ground Truth| / |Prediction ∪ Ground Truth|
+    
+    Deep Learning Interpretation:
+    - Intersection: Pixels correctly predicted as positive (true positives)
+    - Union: All pixels predicted or actually positive (TP + FP + FN)
+    - Range: [0, 1] where 1 indicates perfect overlap
+    - Threshold: Typically 0.5 for binary classification, varies for multi-class
+    
+    Key Properties:
+    - Scale Invariant: Normalized by union, handles different object sizes
+    - Class Imbalance Robust: Focuses on positive predictions rather than negatives
+    - Symmetric: IoU(A,B) = IoU(B,A) for prediction-target pairs
+    - Differentiable: Can be used as loss function (1 - IoU)
     
     Args:
         predictions: Predicted class indices [B, H, W] or probabilities [B, C, H, W]
         targets: Ground truth class indices [B, H, W]
-        num_classes: Number of classes
-        ignore_index: Class index to ignore in calculation
-        per_class: If True, return per-class IoU, else return mean IoU
+        num_classes: Number of classes in segmentation task
+        ignore_index: Class index to exclude from evaluation (e.g., background)
+        per_class: Return individual class IoU scores vs. mean IoU
         
     Returns:
         IoU scores [num_classes] if per_class=True, else scalar mean IoU
+        
+    Implementation Notes:
+    - Handles both hard predictions (class indices) and soft predictions (probabilities)
+    - Supports ignore_index for excluding irrelevant classes
+    - Uses efficient tensor operations for GPU acceleration
+    - Handles edge cases (empty predictions/targets) with NaN values
     """
     # Convert predictions to class indices if needed
     if predictions.dim() == 4:  # Probabilities [B, C, H, W]
