@@ -78,26 +78,39 @@
     - Add batching and collation functions for variable-sized inputs
     - _Requirements: 3.3, 9.3_
 
-- [ ] 4. Implement U-Net segmentation models
-  - [ ] 4.1 Create basic building blocks and layers
+- [x] 4. Implement U-Net segmentation models
+
+
+
+
+
+  - [x] 4.1 Create basic building blocks and layers
+
+
     - Implement Conv->Norm->Act blocks with configurable parameters
     - Create downsampling and upsampling blocks with skip connections
     - Add model registry pattern for configuration-based building
     - _Requirements: 2.4, 8.4, 9.2_
 
-  - [ ] 4.2 Implement transformer components from scratch
+  - [x] 4.2 Implement transformer components from scratch
+
+
     - Create multi-head attention without torch.nn.MultiheadAttention
     - Implement feed-forward networks with residual connections and layer normalization
     - Add positional encoding for spatial tokens with 2D awareness
     - _Requirements: 2.3, 3.3, 9.2_
 
-  - [ ] 4.3 Build pure U-Net baseline model
+  - [x] 4.3 Build pure U-Net baseline model
+
+
     - Implement encoder-decoder architecture with skip connections
     - Ensure proper spatial alignment and feature map sizing
     - Add configurable depth and channel dimensions
     - _Requirements: 3.1, 9.2_
 
-  - [ ] 4.4 Create U-Net + Transformer hybrid model
+  - [x] 4.4 Create U-Net + Transformer hybrid model
+
+
     - Implement tensor reshaping between [B,C,H,W] and [B,T,D] formats
     - Integrate transformer layers at bottleneck with clear conversion points
     - Add configuration switches between baseline and hybrid variants
