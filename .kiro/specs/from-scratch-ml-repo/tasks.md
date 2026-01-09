@@ -116,12 +116,20 @@
     - Add configuration switches between baseline and hybrid variants
     - _Requirements: 3.2, 3.3, 9.2_
 
-- [ ] 5. Implement segmentation training and evaluation systems
-  - [ ] 5.1 Create loss functions from scratch
+- [-] 5. Implement segmentation training and evaluation systems
+
+
+
+  - [x] 5.1 Create loss functions from scratch
+
+
+
     - Implement Dice loss with soft dice coefficient calculation
     - Create combined BCE + Dice loss with configurable weighting
     - Add proper handling of class imbalance and edge cases
     - _Requirements: 2.4, 3.5, 9.2_
+
+
 
   - [ ] 5.2 Implement segmentation metrics
     - Create IoU calculation from scratch with per-class support
