@@ -186,7 +186,11 @@
 
     - _Requirements: 2.5, 4.5, 9.2_
 
-  - [ ] 6.3 Create tokenizer and sequence utilities
+  - [x] 6.3 Create tokenizer and sequence utilities
+
+
+
+
     - Implement character-level tokenizer from scratch with vocabulary management
     - Add encode/decode utilities with proper handling of special tokens
     - Create sequence collation functions with padding and mask generation
