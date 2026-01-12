@@ -196,23 +196,35 @@
     - Create sequence collation functions with padding and mask generation
     - _Requirements: 4.5, 9.2_
 
-- [ ] 7. Implement Paraformer ASR model components
-  - [ ] 7.1 Create transformer layers and attention mechanisms
+- [x] 7. Implement Paraformer ASR model components
+
+
+
+
+  - [x] 7.1 Create transformer layers and attention mechanisms
+
+
     - Implement multi-head attention from scratch without torch.nn.MultiheadAttention
     - Create feed-forward networks with residual connections and layer normalization
     - Add attention masking for padded positions and causal attention
     - _Requirements: 2.3, 4.2, 9.2_
 
-  - [ ] 7.2 Build encoder stack with clear contracts
+  - [x] 7.2 Build encoder stack with clear contracts
+
+
     - Implement multi-layer transformer/conformer-style encoder
     - Add bidirectional self-attention with proper masking
     - Ensure clear tensor contracts and shape documentation
     - _Requirements: 4.1, 6.1, 9.2_
 
+
+
   - [ ] 7.3 Implement predictor module for alignment estimation
     - Create predictor that estimates token boundaries in feature sequences
     - Add clear documentation of what the predictor outputs and how it's used
     - Implement proper conditioning for decoder processing
+
+
     - _Requirements: 4.2, 6.1, 9.2_
 
   - [ ] 7.4 Create decoder/refiner for token generation
