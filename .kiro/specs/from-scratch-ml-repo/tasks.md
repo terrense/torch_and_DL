@@ -219,7 +219,12 @@
 
 
 
-  - [ ] 7.3 Implement predictor module for alignment estimation
+  - [x] 7.3 Implement predictor module for alignment estimation
+
+
+
+
+
     - Create predictor that estimates token boundaries in feature sequences
     - Add clear documentation of what the predictor outputs and how it's used
     - Implement proper conditioning for decoder processing

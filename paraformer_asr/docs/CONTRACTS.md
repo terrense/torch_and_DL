@@ -71,10 +71,20 @@ This document defines explicit tensor shapes, dtypes, and value ranges for all m
 
 | Method | Input | Shape | Dtype | Range | Output | Shape | Dtype | Range | Notes |
 |--------|-------|-------|-------|-------|--------|-------|-------|-------|-------|
-| `forward` | encoder_out | [B, T, D] | float32 | any | predictions | [B, T, 1] | float32 | [0, ∞) | Duration predictions |
-| | mask | [B, T] | bool | {0, 1} | | | | | Optional padding mask |
-| `predict_alignment` | encoder_out | [B, T, D] | float32 | any | alignment | [B, T] | float32 | [0, 1] | Normalized alignment |
-| | target_len | int | - | [1, ∞) | | | | | Target sequence length |
+| `forward` | encoder_features | [B, T, D] | float32 | any | predictions | [B, T, 1] | float32 | any | Raw predictions |
+| | padding_mask | [B, T] | bool | {0, 1} | probabilities | [B, T, 1] | float32 | [0, 1] | Sigmoid/softplus probs |
+| `compute_alignment_loss` | predictions | [B, T, 1] | float32 | any | loss | scalar | float32 | [0, ∞) | Alignment supervision |
+| | target_alignments | [B, T] or [B, T, 1] | float32 | [0, 1] | | | | | Ground truth alignment |
+| | padding_mask | [B, T] | bool | {0, 1} | | | | | Valid position mask |
+| `extract_token_positions` | probabilities | [B, T, 1] | float32 | [0, 1] | positions | List[List[int]] | int | [0, T-1] | Token boundary positions |
+| | padding_mask | [B, T] | bool | {0, 1} | | | | | Valid position mask |
+| | threshold | scalar | float32 | [0, 1] | | | | | Minimum boundary prob |
+| `generate_alignment_targets` | token_positions | List[List[int]] | int | [0, T-1] | targets | [B, T] | float32 | [0, 1] | Training targets |
+| | sequence_length | scalar | int | [1, ∞) | | | | | Feature sequence length |
+| | method | str | - | - | | | | | 'boundary' or 'gaussian' |
+| `visualize_alignment` | probabilities | [B, T, 1] | float32 | [0, 1] | viz_data | Dict | - | - | Visualization data |
+| | token_positions | List[List[int]] | int | [0, T-1] | | | | | Optional ground truth |
+| | feature_lengths | [B] | int | [1, T] | | | | | Valid sequence lengths |
 
 ### Decoder Architecture
 

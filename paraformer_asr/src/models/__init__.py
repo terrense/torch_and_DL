@@ -32,6 +32,10 @@ from .decoder import (
     PredictorIntegration,
     create_decoder_from_config
 )
+from .paraformer import (
+    ParaformerASR,
+    create_paraformer_from_config
+)
 
 __all__ = [
     # Transformer components
@@ -56,5 +60,9 @@ __all__ = [
     'ParaformerDecoder',
     'DecoderLayer', 
     'PredictorIntegration',
-    'create_decoder_from_config'
+    'create_decoder_from_config',
+    
+    # Complete model
+    'ParaformerASR',
+    'create_paraformer_from_config'
 ]

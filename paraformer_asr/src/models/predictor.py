@@ -15,7 +15,7 @@ Key Concepts:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 import math
 
 from ..utils.tensor_utils import assert_shape, check_nan_inf
@@ -258,6 +258,100 @@ class AlignmentPredictor(nn.Module):
             'num_layers': self.num_layers,
             'predictor_type': self.predictor_type
         }
+    
+    def generate_alignment_targets(
+        self,
+        token_positions: list,
+        sequence_length: int,
+        method: str = 'boundary'
+    ) -> torch.Tensor:
+        """
+        Generate alignment targets from token positions for training.
+        
+        This method shows how to create training targets for the predictor
+        from known token alignments (e.g., from forced alignment).
+        
+        Args:
+            token_positions: List of token boundary positions for each batch item
+            sequence_length: Length of the feature sequence
+            method: 'boundary' for boundary marking, 'gaussian' for soft boundaries
+            
+        Returns:
+            targets: [B, T] alignment targets
+        """
+        B = len(token_positions)
+        targets = torch.zeros(B, sequence_length)
+        
+        for b, positions in enumerate(token_positions):
+            if method == 'boundary':
+                # Mark exact boundary positions
+                for pos in positions:
+                    if 0 <= pos < sequence_length:
+                        targets[b, pos] = 1.0
+            elif method == 'gaussian':
+                # Create soft boundaries with Gaussian distribution
+                sigma = 2.0  # Standard deviation for Gaussian
+                for pos in positions:
+                    if 0 <= pos < sequence_length:
+                        # Create Gaussian centered at position
+                        indices = torch.arange(sequence_length, dtype=torch.float)
+                        gaussian = torch.exp(-0.5 * ((indices - pos) / sigma) ** 2)
+                        targets[b] = torch.maximum(targets[b], gaussian)
+        
+        return targets
+    
+    def visualize_alignment(
+        self,
+        probabilities: torch.Tensor,
+        token_positions: Optional[list] = None,
+        feature_lengths: Optional[torch.Tensor] = None,
+        batch_idx: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Create visualization data for alignment predictions.
+        
+        Args:
+            probabilities: [B, T, 1] alignment probabilities
+            token_positions: Optional ground truth positions
+            feature_lengths: [B] sequence lengths
+            batch_idx: which batch item to visualize
+            
+        Returns:
+            Dictionary with visualization data
+        """
+        assert_shape(probabilities, "B,T,1", "alignment_probabilities")
+        
+        B, T, _ = probabilities.shape
+        assert 0 <= batch_idx < B, f"batch_idx {batch_idx} out of range [0, {B})"
+        
+        # Extract probabilities for selected batch item
+        probs = probabilities[batch_idx, :, 0].cpu().numpy()  # [T]
+        
+        # Get valid length
+        if feature_lengths is not None:
+            valid_length = feature_lengths[batch_idx].item()
+            probs = probs[:valid_length]
+        else:
+            valid_length = T
+        
+        # Extract predicted positions
+        predicted_positions = self.extract_token_positions(
+            probabilities[batch_idx:batch_idx+1],
+            padding_mask=None if feature_lengths is None else 
+                        (torch.arange(T) < feature_lengths[batch_idx:batch_idx+1, None])
+        )[0]
+        
+        viz_data = {
+            'probabilities': probs,
+            'predicted_positions': predicted_positions,
+            'sequence_length': valid_length,
+            'time_axis': list(range(valid_length))
+        }
+        
+        if token_positions is not None and batch_idx < len(token_positions):
+            viz_data['ground_truth_positions'] = token_positions[batch_idx]
+        
+        return viz_data
 
 
 class CTCAlignmentPredictor(AlignmentPredictor):
