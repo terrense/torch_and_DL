@@ -83,6 +83,47 @@ def create_attention_mask(
     return attention_mask
 
 
+def collate_seq2seq_batch(batch: List[Tuple[torch.Tensor, torch.Tensor, int, int]]) -> Dict[str, torch.Tensor]:
+    """
+    Collate function for seq2seq DataLoader to handle variable-length sequences.
+    
+    Args:
+        batch: List of (features, tokens, feat_len, token_len) tuples
+        
+    Returns:
+        batch_dict: Dictionary with padded tensors and lengths
+    """
+    features_list = []
+    tokens_list = []
+    feat_lengths = []
+    token_lengths = []
+    
+    # Separate batch components
+    for features, tokens, feat_len, token_len in batch:
+        features_list.append(features)
+        tokens_list.append(tokens)
+        feat_lengths.append(feat_len)
+        token_lengths.append(token_len)
+    
+    # Convert lengths to tensors
+    feat_lengths = torch.tensor(feat_lengths, dtype=torch.long)
+    token_lengths = torch.tensor(token_lengths, dtype=torch.long)
+    
+    # Pad sequences
+    # Features: pad to [batch_size, max_feat_len, feature_dim]
+    features_padded = pad_sequence(features_list, batch_first=True, padding_value=0.0)
+    
+    # Tokens: pad to [batch_size, max_token_len]
+    tokens_padded = pad_sequence(tokens_list, batch_first=True, padding_value=0)
+    
+    return {
+        'features': features_padded,
+        'tokens': tokens_padded,
+        'feature_lengths': feat_lengths,
+        'token_lengths': token_lengths
+    }
+
+
 def collate_fn(batch: List[Tuple[torch.Tensor, torch.Tensor, int, int]]) -> Dict[str, torch.Tensor]:
     """
     Collate function for DataLoader to handle variable-length sequences.
