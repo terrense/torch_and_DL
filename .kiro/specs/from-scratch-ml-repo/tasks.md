@@ -232,32 +232,50 @@
 
     - _Requirements: 4.2, 6.1, 9.2_
 
-  - [ ] 7.4 Create decoder/refiner for token generation
+  - [x] 7.4 Create decoder/refiner for token generation
+
+
+
+
+
     - Implement decoder that produces token logits from encoder features
     - Add attention over encoder outputs with proper masking
     - Integrate predictor signals for improved alignment
     - _Requirements: 4.3, 9.2_
 
-- [ ] 8. Implement ASR training and inference systems
-  - [ ] 8.1 Create sequence loss functions
+- [x] 8. Implement ASR training and inference systems
+
+
+
+
+
+  - [x] 8.1 Create sequence loss functions
+
+
     - Implement masked cross-entropy for variable-length sequences
     - Add optional auxiliary losses for predictor training
     - Handle padding and sequence length variations properly
     - _Requirements: 2.4, 9.2_
 
-  - [ ] 8.2 Build greedy decoding system
+  - [x] 8.2 Build greedy decoding system
+
+
     - Implement greedy decoding from logits with proper masking
     - Add tokenizer integration for text generation
     - Create inference pipeline from features to decoded text
     - _Requirements: 4.4, 9.4_
 
-  - [ ] 8.3 Implement training loop with sequence-specific features
+  - [x] 8.3 Implement training loop with sequence-specific features
+
+
     - Create training loop with optimizer, scheduler, and gradient clipping
     - Add token accuracy calculation and sequence-level metrics
     - Include comprehensive logging and checkpoint management
     - _Requirements: 5.3, 5.4, 9.2, 9.5_
 
-  - [ ] 8.4 Create evaluation and inference scripts
+  - [x] 8.4 Create evaluation and inference scripts
+
+
     - Implement evaluation pipeline with token accuracy and loss calculation
     - Create inference script for feature sequences with text output
     - Add optional FastAPI service for JSON feature input and text output
