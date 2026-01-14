@@ -17,8 +17,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.toy_shapes import ToyShapesDataset
-from src.models.registry import create_model, ModelConfig
+from src.data.toy_shapes import ToyShapesDataset, ShapeConfig
+from src.models.unet import UNet
 from src.losses.seg_losses import get_loss_function
 from src.utils.reproducibility import set_seed
 from src.utils.checkpoint import CheckpointManager
@@ -27,23 +27,37 @@ from src.utils.checkpoint import CheckpointManager
 @pytest.fixture
 def toy_dataset():
     """Create a small toy dataset for smoke testing."""
-    return ToyShapesDataset(
-        num_samples=40,
+    from src.data.toy_shapes import ShapeConfig
+    
+    config = ShapeConfig(
         image_size=64,
         num_classes=3,
-        shape_types=['circle', 'square']
+        shape_types=['circle', 'square'],
+        blur_prob=0.0  # Disable blur to avoid compatibility issues
+    )
+    
+    return ToyShapesDataset(
+        size=100,  # Increased for more batches
+        config=config,
+        seed=42
     )
 
 
 @pytest.fixture
 def model_config():
     """Create a minimal model config for smoke tests."""
-    return {
-        'in_channels': 3,
-        'num_classes': 3,
-        'base_channels': 32,
-        'depth': 3
-    }
+    from src.config import ModelConfig
+    
+    return ModelConfig(
+        name='unet_test',
+        input_channels=3,
+        num_classes=3,
+        encoder_channels=[32, 64, 128],
+        decoder_channels=[64, 32, 16],
+        hidden_dim=32,
+        num_layers=3,
+        dropout=0.1
+    )
 
 
 def test_training_loss_decreases(toy_dataset, model_config):
@@ -52,12 +66,8 @@ def test_training_loss_decreases(toy_dataset, model_config):
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # Create model and loss using ModelConfig
-    config = ModelConfig(
-        model_type='unet',
-        **model_config
-    )
-    model = create_model(config)
+    # Create model directly
+    model = UNet(model_config)
     model.to(device)
     
     loss_fn = get_loss_function('dice_bce', num_classes=3)
@@ -78,11 +88,8 @@ def test_training_loss_decreases(toy_dataset, model_config):
     step = 0
     max_steps = 50
     
-    for epoch in range(3):
+    for epoch in range(10):  # Increase epochs to ensure we reach max_steps
         for images, masks in train_loader:
-            if step >= max_steps:
-                break
-            
             images = images.to(device)
             masks = masks.to(device)
             
@@ -102,6 +109,9 @@ def test_training_loss_decreases(toy_dataset, model_config):
                 final_losses.append(loss.item())
             
             step += 1
+            
+            if step >= max_steps:
+                break
         
         if step >= max_steps:
             break
@@ -123,11 +133,7 @@ def test_checkpoint_save_load(toy_dataset, model_config):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # Create model and optimizer
-    config = ModelConfig(
-        model_type='unet',
-        **model_config
-    )
-    model = create_model(config)
+    model = UNet(model_config)
     model.to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
@@ -160,14 +166,14 @@ def test_checkpoint_save_load(toy_dataset, model_config):
             loss.backward()
             optimizer.step()
         
-        # Save checkpoint
-        checkpoint_data = {
-            'epoch': 1,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'best_val_metric': 0.5
-        }
-        checkpoint_manager.save_checkpoint(checkpoint_data, epoch=1, is_best=True)
+        # Save checkpoint using the correct API
+        metrics = {'val_loss': 0.5, 'val_dice': 0.75}
+        checkpoint_manager.save_checkpoint(
+            model=model,
+            optimizer=optimizer,
+            epoch=1,
+            metrics=metrics
+        )
         
         # Get saved model weights
         original_weights = {
@@ -176,17 +182,21 @@ def test_checkpoint_save_load(toy_dataset, model_config):
         }
         
         # Create new model and load checkpoint
-        config2 = ModelConfig(
-            model_type='unet',
-            **model_config
-        )
-        model2 = create_model(config2)
+        model2 = UNet(model_config)
         model2.to(device)
         
-        # Load checkpoint
-        checkpoint_path = Path(tmpdir) / 'best_checkpoint.pt'
-        checkpoint = torch.load(checkpoint_path, map_location=device)
-        model2.load_state_dict(checkpoint['model_state_dict'])
+        # Load checkpoint using CheckpointManager
+        optimizer2 = torch.optim.AdamW(model2.parameters(), lr=1e-3)
+        loaded_data = checkpoint_manager.load_checkpoint(
+            model=model2,
+            optimizer=optimizer2,
+            load_best=True,
+            map_location=device
+        )
+        
+        # Verify checkpoint metadata
+        assert loaded_data['epoch'] == 1
+        assert 'val_loss' in loaded_data['metrics']
         
         # Verify models have same weights
         for name, param in model2.state_dict().items():
@@ -204,11 +214,7 @@ def test_reproducibility(toy_dataset, model_config):
     def train_n_steps(seed, n_steps=15):
         set_seed(seed)
         
-        config = ModelConfig(
-            model_type='unet',
-            **model_config
-        )
-        model = create_model(config)
+        model = UNet(model_config)
         model.to(device)
         
         optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
@@ -258,11 +264,7 @@ def test_overfitting_on_single_batch(toy_dataset, model_config):
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    config = ModelConfig(
-        model_type='unet',
-        **model_config
-    )
-    model = create_model(config)
+    model = UNet(model_config)
     model.to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
