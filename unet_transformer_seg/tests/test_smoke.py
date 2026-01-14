@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data.toy_shapes import ToyShapesDataset
-from src.models.registry import get_model
+from src.models.registry import create_model, ModelConfig
 from src.losses.seg_losses import get_loss_function
 from src.utils.reproducibility import set_seed
 from src.utils.checkpoint import CheckpointManager
@@ -52,8 +52,12 @@ def test_training_loss_decreases(toy_dataset, model_config):
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # Create model and loss
-    model = get_model('unet', **model_config)
+    # Create model and loss using ModelConfig
+    config = ModelConfig(
+        model_type='unet',
+        **model_config
+    )
+    model = create_model(config)
     model.to(device)
     
     loss_fn = get_loss_function('dice_bce', num_classes=3)
@@ -119,7 +123,11 @@ def test_checkpoint_save_load(toy_dataset, model_config):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # Create model and optimizer
-    model = get_model('unet', **model_config)
+    config = ModelConfig(
+        model_type='unet',
+        **model_config
+    )
+    model = create_model(config)
     model.to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
@@ -168,7 +176,11 @@ def test_checkpoint_save_load(toy_dataset, model_config):
         }
         
         # Create new model and load checkpoint
-        model2 = get_model('unet', **model_config)
+        config2 = ModelConfig(
+            model_type='unet',
+            **model_config
+        )
+        model2 = create_model(config2)
         model2.to(device)
         
         # Load checkpoint
@@ -192,7 +204,11 @@ def test_reproducibility(toy_dataset, model_config):
     def train_n_steps(seed, n_steps=15):
         set_seed(seed)
         
-        model = get_model('unet', **model_config)
+        config = ModelConfig(
+            model_type='unet',
+            **model_config
+        )
+        model = create_model(config)
         model.to(device)
         
         optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
@@ -242,7 +258,11 @@ def test_overfitting_on_single_batch(toy_dataset, model_config):
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    model = get_model('unet', **model_config)
+    config = ModelConfig(
+        model_type='unet',
+        **model_config
+    )
+    model = create_model(config)
     model.to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
