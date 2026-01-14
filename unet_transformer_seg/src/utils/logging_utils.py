@@ -58,6 +58,84 @@ from dataclasses import dataclass, asdict
 import torch
 
 
+def setup_logger(
+    name: str = "logger",
+    log_file: Optional[Union[str, Path]] = None,
+    level: int = logging.INFO,
+    console_output: bool = True
+) -> logging.Logger:
+    """
+    Setup a simple logger with console and optional file output.
+    设置一个简单的日志记录器，支持控制台和可选的文件输出。
+
+    Args / 参数:
+        name (str): Logger name / 日志记录器名称
+        log_file (Optional[Union[str, Path]]): Optional path to log file
+                                                可选的日志文件路径
+        level (int): Logging level (logging.INFO, logging.DEBUG, etc.)
+                    日志级别（logging.INFO, logging.DEBUG等）
+        console_output (bool): Whether to output to console
+                              是否输出到控制台
+
+    Returns / 返回:
+        logging.Logger: Configured logger instance
+                       配置好的日志记录器实例
+
+    Example / 示例:
+        >>> logger = setup_logger("segmentation", "train.log")
+        >>> logger.info("Training started")
+        2024-01-14 10:30:00 - segmentation - INFO - Training started
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    
+    # Clear existing handlers
+    logger.handlers.clear()
+    
+    # Create formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    # Console handler
+    if console_output:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(level)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+    
+    # File handler
+    if log_file is not None:
+        log_file = Path(log_file)
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    
+    return logger
+
+
+def log_metrics(
+    logger: logging.Logger,
+    metrics: Dict[str, float],
+    prefix: str = ""
+) -> None:
+    """
+    Log metrics dictionary to logger.
+    
+    Args:
+        logger: Logger instance
+        metrics: Dictionary of metrics
+        prefix: Optional prefix for log message
+    """
+    metrics_str = ", ".join([f"{k}={v:.6f}" for k, v in metrics.items()])
+    if prefix:
+        logger.info(f"{prefix}: {metrics_str}")
+    else:
+        logger.info(metrics_str)
+
+
 @dataclass
 class LogEntry:
     """

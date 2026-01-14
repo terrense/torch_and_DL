@@ -55,6 +55,69 @@ def set_seed(seed: int, deterministic: bool = True) -> None:
     logger.info(f"Set random seed to {seed}, deterministic={deterministic}")
 
 
+def set_deterministic(deterministic: bool = True) -> None:
+    """
+    Enable or disable deterministic operations for reproducibility.
+    启用或禁用确定性操作以实现可复现性。
+
+    Args / 参数:
+        deterministic (bool): Whether to enable deterministic operations
+                             是否启用确定性操作
+
+    Deterministic Mode / 确定性模式:
+        When enabled / 启用时:
+        - torch.backends.cudnn.deterministic = True
+          使用确定性cuDNN算法
+        - torch.backends.cudnn.benchmark = False
+          禁用cuDNN自动调优
+        - Sets CUBLAS_WORKSPACE_CONFIG environment variable
+          设置CUBLAS_WORKSPACE_CONFIG环境变量
+        - Enables deterministic algorithms in PyTorch
+          在PyTorch中启用确定性算法
+
+    Trade-offs / 权衡:
+        Deterministic = True:
+        + Reproducible results / 可复现的结果
+        + Same output for same input / 相同输入产生相同输出
+        - Slower performance / 性能较慢
+        - Some operations not supported / 某些操作不支持
+
+        Deterministic = False:
+        + Faster performance / 性能更快
+        + All operations supported / 支持所有操作
+        - Non-reproducible results / 结果不可复现
+        - Different output each run / 每次运行输出不同
+
+    Example / 示例:
+        >>> set_deterministic(True)  # For reproducible experiments
+        >>> set_deterministic(False) # For faster training
+    """
+    if deterministic:
+        # Enable deterministic operations
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        
+        # Set environment variables for deterministic behavior
+        os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+        
+        # Enable deterministic algorithms (PyTorch 1.8+)
+        if hasattr(torch, 'use_deterministic_algorithms'):
+            try:
+                torch.use_deterministic_algorithms(True)
+            except RuntimeError:
+                # Some operations don't support deterministic mode
+                logger.warning("Could not enable deterministic algorithms")
+    else:
+        # Allow non-deterministic operations for better performance
+        torch.backends.cudnn.deterministic = False
+        torch.backends.cudnn.benchmark = True
+        
+        if hasattr(torch, 'use_deterministic_algorithms'):
+            torch.use_deterministic_algorithms(False)
+    
+    logger.info(f"Set deterministic mode to {deterministic}")
+
+
 def get_environment_info() -> Dict[str, Any]:
     """
     Collect environment information for reproducibility logging.
