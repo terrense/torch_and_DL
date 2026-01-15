@@ -121,9 +121,9 @@ class TestConfigurationLoading:
         config_data = {
             'model': {
                 'name': 'unet',
-                'in_channels': 3,
+                'input_channels': 3,
                 'num_classes': 3,
-                'base_channels': 64
+                'hidden_dim': 64
             },
             'training': {
                 'num_epochs': 10,
@@ -141,7 +141,7 @@ class TestConfigurationLoading:
         config = load_config(config_path)
         
         assert config.model.name == 'unet'
-        assert config.model.in_channels == 3
+        assert config.model.input_channels == 3
         assert config.training.num_epochs == 10
     
     def test_invalid_config_format(self, tmp_path):
@@ -170,7 +170,7 @@ class TestConfigurationLoading:
         from config import load_config
         # Should use defaults for missing fields
         config = load_config(config_path)
-        assert hasattr(config.model, 'in_channels')
+        assert hasattr(config.model, 'input_channels')
 
 
 class TestOutputGeneration:
