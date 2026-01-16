@@ -160,3 +160,320 @@ Track GPU memory usage during training:
 - Peak memory should not exceed available GPU memory
 - Memory leaks indicated by steadily increasing usage
 - Batch size adjustments based on memory constraints
+
+
+## Troubleshooting Guide
+
+### Common Shape Mismatches
+
+#### Problem: "Expected shape [B,3,H,W] but got [B,H,W,3]"
+**Cause**: Image tensor has channels in wrong position (HWC instead of CHW format)
+
+**Solution**:
+```python
+# Convert from HWC to CHW
+if image.shape[-1] == 3:
+    image = image.permute(0, 3, 1, 2)  # [B,H,W,3] -> [B,3,H,W]
+```
+
+**Prevention**: Always use `torchvision.transforms.ToTensor()` which handles this conversion automatically.
+
+#### Problem: "RuntimeError: Sizes of tensors must match except in dimension 1"
+**Cause**: Skip connection dimensions don't match during upsampling in U-Net
+
+**Solution**:
+```python
+# In UpBlock, ensure proper spatial alignment
+def forward(self, x, skip):
+    x = self.upsample(x)
+    # Handle size mismatch due to odd dimensions
+    if x.shape[2:] != skip.shape[2:]:
+        x = F.interpolate(x, size=skip.shape[2:], mode='bilinear', align_corners=False)
+    x = torch.cat([x, skip], dim=1)
+    return self.conv(x)
+```
+
+**Prevention**: Use even-sized input dimensions (e.g., 256×256 instead of 255×255).
+
+#### Problem: "Expected 4D tensor but got 3D tensor"
+**Cause**: Missing batch dimension in single-image inference
+
+**Solution**:
+```python
+# Add batch dimension for single image
+if image.dim() == 3:
+    image = image.unsqueeze(0)  # [3,H,W] -> [1,3,H,W]
+```
+
+**Prevention**: Always maintain batch dimension, even for single samples.
+
+### Common Mask Issues
+
+#### Problem: "Target mask contains values outside [0, num_classes-1]"
+**Cause**: Mask values not properly normalized or contain invalid labels
+
+**Solution**:
+```python
+# Validate and clip mask values
+mask = torch.clamp(mask, 0, num_classes - 1)
+
+# Check for invalid values before training
+assert mask.min() >= 0 and mask.max() < num_classes, \
+    f"Mask contains invalid values: min={mask.min()}, max={mask.max()}"
+```
+
+**Prevention**: Validate dataset generation and ensure mask values are integers in valid range.
+
+#### Problem: "Dice loss returns NaN"
+**Cause**: Division by zero when both prediction and target are empty (all zeros)
+
+**Solution**:
+```python
+# Add epsilon to prevent division by zero
+def dice_loss(pred, target, epsilon=1e-7):
+    intersection = (pred * target).sum()
+    union = pred.sum() + target.sum()
+    dice = (2 * intersection + epsilon) / (union + epsilon)
+    return 1 - dice
+```
+
+**Prevention**: Always include epsilon in dice coefficient calculations.
+
+#### Problem: "Mask and image dimensions don't match after augmentation"
+**Cause**: Transforms applied to image but not mask, or vice versa
+
+**Solution**:
+```python
+# Apply same transform to both image and mask
+class PairedTransform:
+    def __init__(self, transform):
+        self.transform = transform
+    
+    def __call__(self, image, mask):
+        # Use same random state for both
+        seed = torch.randint(0, 2**32, (1,)).item()
+        torch.manual_seed(seed)
+        image = self.transform(image)
+        torch.manual_seed(seed)
+        mask = self.transform(mask)
+        return image, mask
+```
+
+**Prevention**: Use paired transforms that maintain spatial correspondence.
+
+### Transformer-Specific Issues
+
+#### Problem: "RuntimeError: mat1 and mat2 shapes cannot be multiplied"
+**Cause**: Hidden dimension not divisible by number of attention heads
+
+**Solution**:
+```python
+# Ensure hidden_dim is divisible by num_heads
+assert hidden_dim % num_heads == 0, \
+    f"hidden_dim ({hidden_dim}) must be divisible by num_heads ({num_heads})"
+```
+
+**Prevention**: Choose compatible hidden_dim and num_heads (e.g., 512 and 8).
+
+#### Problem: "Transformer output shape doesn't match CNN input"
+**Cause**: Incorrect reshaping between [B,T,D] and [B,C,H,W] formats
+
+**Solution**:
+```python
+# Proper reshaping with dimension tracking
+def reshape_for_transformer(x):
+    B, C, H, W = x.shape
+    x = x.flatten(2).transpose(1, 2)  # [B,C,H,W] -> [B,H*W,C]
+    return x, (H, W)
+
+def reshape_from_transformer(x, spatial_dims):
+    B, T, C = x.shape
+    H, W = spatial_dims
+    assert T == H * W, f"Sequence length {T} doesn't match spatial dims {H}×{W}"
+    x = x.transpose(1, 2).reshape(B, C, H, W)
+    return x
+```
+
+**Prevention**: Always track and validate spatial dimensions during reshaping.
+
+#### Problem: "Attention weights sum to NaN"
+**Cause**: Attention scores overflow or underflow before softmax
+
+**Solution**:
+```python
+# Use scaled dot-product attention with proper scaling
+def scaled_dot_product_attention(q, k, v, mask=None):
+    d_k = q.size(-1)
+    scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(d_k)
+    
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
+    
+    attn_weights = F.softmax(scores, dim=-1)
+    
+    # Check for NaN
+    if torch.isnan(attn_weights).any():
+        print(f"NaN in attention! Scores range: [{scores.min()}, {scores.max()}]")
+        attn_weights = torch.nan_to_num(attn_weights, nan=0.0)
+    
+    return torch.matmul(attn_weights, v)
+```
+
+**Prevention**: Always scale attention scores by sqrt(d_k) and check for extreme values.
+
+### Training Issues
+
+#### Problem: "Loss is NaN after a few iterations"
+**Cause**: Exploding gradients or learning rate too high
+
+**Solution**:
+```python
+# Add gradient clipping
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+# Reduce learning rate
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+
+# Check for NaN in loss
+if torch.isnan(loss):
+    print("NaN loss detected! Skipping batch.")
+    continue
+```
+
+**Prevention**: Use gradient clipping and start with conservative learning rates.
+
+#### Problem: "Model predicts all background (class 0)"
+**Cause**: Class imbalance in dataset or improper loss weighting
+
+**Solution**:
+```python
+# Use weighted loss for class imbalance
+class_weights = torch.tensor([0.1, 1.0, 1.0, ...])  # Lower weight for background
+criterion = nn.CrossEntropyLoss(weight=class_weights)
+
+# Or use focal loss for hard examples
+def focal_loss(pred, target, alpha=0.25, gamma=2.0):
+    ce_loss = F.cross_entropy(pred, target, reduction='none')
+    pt = torch.exp(-ce_loss)
+    focal_loss = alpha * (1 - pt) ** gamma * ce_loss
+    return focal_loss.mean()
+```
+
+**Prevention**: Analyze class distribution and use appropriate loss weighting.
+
+#### Problem: "Validation metrics don't improve but training loss decreases"
+**Cause**: Overfitting or train/val data distribution mismatch
+
+**Solution**:
+```python
+# Add regularization
+model = UNet(dropout=0.2)  # Add dropout
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
+
+# Use data augmentation
+transforms = Compose([
+    RandomHorizontalFlip(p=0.5),
+    RandomRotation(degrees=15),
+    ColorJitter(brightness=0.2, contrast=0.2)
+])
+
+# Early stopping
+if val_loss > best_val_loss:
+    patience_counter += 1
+    if patience_counter >= patience:
+        print("Early stopping triggered")
+        break
+```
+
+**Prevention**: Use proper regularization and monitor train/val gap.
+
+### Memory Issues
+
+#### Problem: "CUDA out of memory"
+**Cause**: Batch size too large or model too big for available GPU memory
+
+**Solution**:
+```python
+# Reduce batch size
+batch_size = 4  # Instead of 16
+
+# Use gradient accumulation
+accumulation_steps = 4
+for i, batch in enumerate(dataloader):
+    loss = train_step(batch) / accumulation_steps
+    loss.backward()
+    
+    if (i + 1) % accumulation_steps == 0:
+        optimizer.step()
+        optimizer.zero_grad()
+
+# Enable gradient checkpointing
+model.use_checkpoint = True
+```
+
+**Prevention**: Profile memory usage and adjust batch size accordingly.
+
+#### Problem: "Memory usage increases over time"
+**Cause**: Memory leak from retaining computation graphs
+
+**Solution**:
+```python
+# Detach tensors when not needed for backprop
+with torch.no_grad():
+    val_loss = validate(model, val_loader)
+
+# Clear cache periodically
+if epoch % 10 == 0:
+    torch.cuda.empty_cache()
+
+# Don't accumulate losses in lists
+# Bad: losses.append(loss)
+# Good: losses.append(loss.item())
+```
+
+**Prevention**: Use `torch.no_grad()` for inference and detach tensors appropriately.
+
+### Debugging Tips
+
+#### Enable Detailed Error Messages
+```python
+# Set environment variable for better error messages
+import os
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+
+# Enable anomaly detection
+torch.autograd.set_detect_anomaly(True)
+```
+
+#### Add Comprehensive Logging
+```python
+# Log tensor statistics
+def log_tensor_stats(tensor, name):
+    print(f"{name}: shape={tensor.shape}, dtype={tensor.dtype}, "
+          f"min={tensor.min():.4f}, max={tensor.max():.4f}, "
+          f"mean={tensor.mean():.4f}, std={tensor.std():.4f}, "
+          f"nan={torch.isnan(tensor).sum()}, inf={torch.isinf(tensor).sum()}")
+
+# Use in training loop
+log_tensor_stats(images, "input_images")
+log_tensor_stats(logits, "model_output")
+log_tensor_stats(loss, "loss")
+```
+
+#### Visualize Intermediate Outputs
+```python
+# Save intermediate feature maps
+def visualize_features(features, save_path):
+    import matplotlib.pyplot as plt
+    fig, axes = plt.subplots(4, 4, figsize=(12, 12))
+    for i, ax in enumerate(axes.flat):
+        if i < features.shape[1]:
+            ax.imshow(features[0, i].detach().cpu().numpy())
+            ax.axis('off')
+    plt.savefig(save_path)
+    plt.close()
+
+# Use during debugging
+features = model.encode(images)
+visualize_features(features, 'debug_features.png')
+```
